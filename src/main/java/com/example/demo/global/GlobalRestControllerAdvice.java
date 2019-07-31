@@ -2,21 +2,20 @@ package com.example.demo.global;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /*
  * ResponseEntityExceptionHandler 확인
  */
 @RestControllerAdvice
-public class GlobalRestControllerAdvice {
+public class GlobalRestControllerAdvice extends ResponseEntityExceptionHandler {
 
     public static class GlobalRestException extends ResourceAccessException {
 
@@ -32,10 +31,21 @@ public class GlobalRestControllerAdvice {
 
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    // 아래부터 exception class에 따라 handle 추가
+    
     @ExceptionHandler(value = { GlobalRestException.class })
-    protected ResponseEntity<?> restExceptionHandler(HttpServletRequest request, ServletException e) {
-        return ResponseEntity.of(null);
+    protected ResponseEntity<Object> globalRestExceptionHandler(GlobalRestException ex, WebRequest request) {
+
+        // http header 설정
+        HttpHeaders headers = new HttpHeaders();
+        
+        // http status 설정
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        // http body 설정
+        Object obj = new Object();
+        
+        return handleExceptionInternal(ex, obj, headers, status, request);
     }
 
 }
